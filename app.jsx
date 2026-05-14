@@ -79,6 +79,7 @@ function App() {
         <Projects />
         <Achievements />
         <Education />
+        <HomeLab />
         <Contact />
       </main>
       <Footer />

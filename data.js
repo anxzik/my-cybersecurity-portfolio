@@ -113,6 +113,15 @@ const PORTFOLIO = {
   ],
   projects: [
     {
+      name: "ARCHITSEC Homelab",
+      year: "2026",
+      status: "ongoing",
+      category: "homelab",
+      description: "Production-grade on-premises / cloud hybrid lab — Proxmox VE on Dell R630, 8-VLAN segmented network, dual-DC Active Directory domain, 3-node K3s Kubernetes cluster, NATS JetStream messaging, GitLab CI/CD, Harbor registry, Wazuh SIEM, Keycloak SSO, and HashiCorp Vault. Full topology, hardware inventory, and build log documented below.",
+      tags: ["Proxmox VE", "K3s", "WireGuard", "GitLab CI", "Wazuh", "Vault", "Keycloak", "FreshTomato"],
+      links: [{ label: "full documentation", href: "#homelab" }],
+    },
+    {
       name: "Sentinel Pipeline",
       year: "2025",
       status: "ongoing",
@@ -257,6 +266,7 @@ const PORTFOLIO = {
     { id: "projects",    label: "projects" },
     { id: "achievements",label: "achievements" },
     { id: "education",   label: "education" },
+    { id: "homelab",     label: "homelab" },
     { id: "contact",     label: "contact" },
   ],
 };
