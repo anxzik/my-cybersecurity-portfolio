@@ -1,1 +1,6 @@
 .claude/
+static-analysis.datadog.yml
+static-analysis.snyk.yml
+static-analysis.trivy.yml   
+.vscode/
+vercel.json 

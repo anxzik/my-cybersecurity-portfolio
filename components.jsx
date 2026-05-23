@@ -245,23 +245,13 @@ function About() {
         Engineering <span className="accent">trust</span> at every layer.
       </Reveal>
       <Reveal as="p" className="section-subtitle">
-        A decade in the trenches of cybersecurity — from offensive research to production-grade
-        secure software. Below is the operator profile.
+        Drawn to the trenches of Cybersecurity by way of a lifelong fascination with computing, and a Decades long career in Physical Security,
+          I help organizations secure and monitor their environments.
       </Reveal>
 
       <div className="about-grid">
         <Reveal as="div" className="about-body">
           <p>{identity.bio}</p>
-          <p>
-            I'm a builder before I'm a breaker — every offensive engagement informs the defensive
-            systems I help engineering teams ship. My work sits at the intersection of <strong>red
-            teaming</strong>, <strong>secure-by-default architecture</strong>, and
-            <strong> automated assurance</strong> in CI/CD.
-          </p>
-          <p>
-            Outside engagements, I publish CVE research, maintain open-source tooling on the
-            supply-chain integrity stack, and mentor junior engineers transitioning into security.
-          </p>
         </Reveal>
 
         <Reveal as="aside" className="info-card">
@@ -278,8 +268,8 @@ function About() {
             <div className="v">{identity.location}</div>
           </div>
           <div className="info-row">
-            <div className="k">experience</div>
-            <div className="v">{identity.yearsExperience} years · 47+ engagements</div>
+            <div className="k">background</div>
+            <div className="v">20+ yrs physical security · EMS Director of Operations</div>
           </div>
           <div className="info-row">
             <div className="k">status</div>
@@ -287,7 +277,7 @@ function About() {
           </div>
           <div className="info-row">
             <div className="k">stack</div>
-            <div className="v">Python · Go · Rust · K8s · AWS · Terraform</div>
+            <div className="v">Python · Go · Bash · K8s · GCP · GitLab CI</div>
           </div>
         </Reveal>
       </div>
@@ -353,12 +343,12 @@ function Projects() {
   const [filter, setFilter] = useState("all");
   const categories = useMemo(() => {
     const cats = [
-      { id: "all",       label: "all" },
-      { id: "offsec",    label: "offsec" },
-      { id: "secdev",    label: "secdev" },
-      { id: "devsecops", label: "devsecops" },
-      { id: "cloud",     label: "cloud" },
-      { id: "comms",     label: "comms" },
+      { id: "all",         label: "all" },
+      { id: "devsecops",   label: "devsecops" },
+      { id: "blue team",   label: "blue team" },
+      { id: "cloud",       label: "cloud" },
+      { id: "networking",  label: "networking" },
+      { id: "softwaredev", label: "softwaredev" },
     ];
     return cats;
   }, []);
@@ -409,10 +399,14 @@ function Projects() {
                 {p.tags.map((t) => (<span className="skill-tag" key={t}>{t}</span>))}
               </div>
               <div className="project-links">
-                {p.links.map((l) => (
-                  <a key={l.label} href={l.href} className="project-link">
+                {p.links.map((l) => l.href ? (
+                  <a key={l.label} href={l.href} className="project-link" target="_blank" rel="noreferrer">
                     <i className="bi bi-arrow-up-right"></i> {l.label}
                   </a>
+                ) : (
+                  <span key={l.label} className="project-link" style={{opacity: 0.5, cursor: 'default'}}>
+                    <i className="bi bi-lock"></i> {l.label}
+                  </span>
                 ))}
               </div>
             </div>
@@ -439,12 +433,14 @@ function Achievements() {
 
       <Reveal as="div" className="cert-grid reveal-stagger">
         {PORTFOLIO.certifications.map((c) => (
-          <div className="cert" key={c.name}>
+          <div className="cert" key={c.name} style={c.expired ? {opacity: 0.6} : {}}>
             <div className="cert-icon"><i className={`bi bi-${c.icon}`}></i></div>
             <div>
               <div className="cert-name">{c.name}</div>
               <div className="cert-org">{c.org}</div>
-              <div className="cert-year">Issued {c.year}</div>
+              <div className="cert-year" style={c.expired ? {color: 'var(--fg-muted)'} : {}}>
+                {c.expired ? `Expired ${c.year}` : `Issued ${c.year}`}
+              </div>
             </div>
           </div>
         ))}
