@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARCHITSEC Homelab — Internal Network Documentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@200;300;400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #080c10;
+    --bg-secondary: #0d1219;
+    --bg-card: #111820;
+    --bg-elevated: #161f2a;
+    --border: #1e2d3d;
+    --border-bright: #2a3f54;
+    --accent-blue: #00d4ff;
+    --accent-cyan: #00ffcc;
+    --accent-orange: #ff6b35;
+    --accent-red: #ff3366;
+    --accent-green: #00ff88;
+    --accent-yellow: #ffd700;
+    --text-primary: #e8f4f8;
+    --text-secondary: #7a9bb5;
+    --text-muted: #3d5a70;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Exo 2', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+    animation: gridscroll 18s linear infinite;
+  }
+  @keyframes gridscroll {
+    from { background-position: 0 0, 0 0; }
+    to   { background-position: 40px 40px, 40px 40px; }
+  }
+
+  .container { max-width: 1320px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* Header */
+  header {
+    background: linear-gradient(180deg, #0a1520 0%, var(--bg-primary) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 30px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+  }
+  .header-content {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .logo-area { display: flex; align-items: center; gap: 16px; }
+  .logo-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; color: #061018;
+    box-shadow: 0 0 20px #00d4ff44;
+  }
+  .logo-text h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.7rem; font-weight: 700;
+    color: var(--accent-blue);
+    letter-spacing: 2px; text-transform: uppercase;
+  }
+  .logo-text p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem; color: var(--text-secondary);
+    letter-spacing: 3px; text-transform: uppercase;
+  }
+  .header-meta { display: flex; gap: 22px; flex-wrap: wrap; }
+  .meta-item { text-align: right; }
+  .meta-item .label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 2px;
+  }
+  .meta-item .value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.82rem; color: var(--accent-cyan);
+  }
+
+  /* Navigation */
+  nav {
+    background: rgba(13,18,25,0.95);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  nav ul {
+    display: flex; list-style: none;
+    overflow-x: auto; scrollbar-width: none;
+    max-width: 1320px; margin: 0 auto; padding: 0 12px;
+  }
+  nav ul::-webkit-scrollbar { display: none; }
+  nav ul li a {
+    display: block; padding: 13px 16px;
+    color: var(--text-secondary); text-decoration: none;
+    font-family: 'Rajdhani', sans-serif; font-weight: 600;
+    font-size: 0.82rem; letter-spacing: 1px;
+    text-transform: uppercase; white-space: nowrap;
+    transition: color 0.18s, border-color 0.18s;
+    border-bottom: 2px solid transparent;
+  }
+  nav ul li a:hover {
+    color: var(--accent-blue);
+    border-bottom-color: var(--accent-blue);
+  }
+
+  /* Sections */
+  section { padding: 44px 0; border-bottom: 1px solid var(--border); scroll-margin-top: 60px; }
+  .section-header { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+  .section-number {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem; color: var(--accent-blue);
+    background: #00d4ff11; border: 1px solid #00d4ff33;
+    padding: 4px 8px; border-radius: 4px; letter-spacing: 2px;
+  }
+  .section-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.5rem; font-weight: 700;
+    color: var(--text-primary); letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .section-line {
+    flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--border-bright), transparent);
+  }
+
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 22px;
+    position: relative; overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .card:hover { border-color: var(--border-bright); box-shadow: 0 0 30px #00d4ff14; }
+  .card-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem; font-weight: 600;
+    color: var(--accent-blue); text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* Grids */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+  @media (max-width: 560px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  /* Table wrapper — guarantees no overflow past the card */
+  .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 6px;
+  }
+  .table-wrap::-webkit-scrollbar { height: 7px; }
+  .table-wrap::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 4px; }
+
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78rem;
+  }
+  table.data-table th {
+    background: var(--bg-elevated);
+    color: var(--accent-blue);
+    text-align: left;
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--border-bright);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.66rem;
+    white-space: nowrap;
+  }
+  table.data-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    vertical-align: top;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  table.data-table tr:last-child td { border-bottom: none; }
+  table.data-table tr:hover td { background: var(--bg-elevated); color: var(--text-primary); }
+  .data-table .highlight { color: var(--text-primary); }
+  .data-table .ip { color: var(--accent-cyan); word-break: break-all; }
+  .data-table .port { color: var(--accent-blue); }
+  .data-table .cred { color: var(--accent-orange); word-break: break-all; }
+  .data-table .status-up { color: var(--accent-green); }
+  .data-table .status-pending { color: var(--accent-yellow); }
+  .data-table code {
+    color: var(--accent-cyan);
+    background: #00d4ff0d;
+    padding: 1px 4px; border-radius: 3px;
+    word-break: break-all;
+  }
+
+  /* Badges */
+  .badge {
+    display: inline-block; padding: 2px 7px; border-radius: 4px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.5px; white-space: nowrap;
+  }
+  .badge-green  { background: #00ff8822; color: var(--accent-green);  border: 1px solid #00ff8844; }
+  .badge-blue   { background: #00d4ff22; color: var(--accent-blue);   border: 1px solid #00d4ff44; }
+  .badge-orange { background: #ff6b3522; color: var(--accent-orange); border: 1px solid #ff6b3544; }
+  .badge-yellow { background: #ffd70022; color: var(--accent-yellow); border: 1px solid #ffd70044; }
+  .badge-red    { background: #ff336622; color: var(--accent-red);    border: 1px solid #ff336644; }
+
+  /* Code blocks */
+  .code-block {
+    background: #060a0e;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-blue);
+    border-radius: 4px;
+    padding: 14px 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.76rem;
+    color: var(--accent-cyan);
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+  }
+
+  /* Alerts */
+  .alert {
+    padding: 11px 14px; border-radius: 6px; margin-bottom: 12px;
+    font-size: 0.83rem; display: flex; gap: 10px; align-items: flex-start;
+  }
+  .alert-warning { background: #ffd70011; border: 1px solid #ffd70033; color: var(--accent-yellow); }
+  .alert-success { background: #00ff8811; border: 1px solid #00ff8833; color: var(--accent-green); }
+  .alert-danger  { background: #ff336611; border: 1px solid #ff336633; color: var(--accent-red); }
+  .alert-info    { background: #00d4ff11; border: 1px solid #00d4ff33; color: var(--accent-blue); }
+
+  .cred-warning {
+    background: linear-gradient(135deg, #ff336611, #ff6b3511);
+    border: 1px solid #ff336633; border-radius: 8px;
+    padding: 14px 18px; margin-bottom: 22px;
+    font-size: 0.84rem; color: var(--accent-orange);
+    display: flex; gap: 12px; align-items: center;
+  }
+
+  /* Key-value */
+  .kv-list { display: flex; flex-direction: column; gap: 6px; }
+  .kv-item { display: flex; gap: 12px; align-items: baseline; }
+  .kv-key {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.68rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    min-width: 110px; flex-shrink: 0;
+  }
+  .kv-val { font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; color: var(--text-primary); word-break: break-word; }
+
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border-bright), transparent); margin: 20px 0; }
+
+  /* Topology SVG container */
+  .topology-container {
+    background: #060a0e;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    overflow-x: auto;
+  }
+  .topology-container svg { min-width: 760px; width: 100%; height: auto; display: block; }
+
+  /* Details / collapsible */
+  details.ts-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  details.ts-card[open] { border-color: var(--border-bright); }
+  details.ts-card > summary {
+    cursor: pointer; list-style: none;
+    padding: 16px 20px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600; font-size: 1rem;
+    color: var(--accent-orange);
+    display: flex; align-items: center; gap: 10px;
+    transition: background 0.18s;
+  }
+  details.ts-card > summary:hover { background: var(--bg-elevated); }
+  details.ts-card > summary::-webkit-details-marker { display: none; }
+  details.ts-card > summary::before {
+    content: '▸';
+    color: var(--text-secondary);
+    transition: transform 0.18s;
+    display: inline-block;
+  }
+  details.ts-card[open] > summary::before { transform: rotate(90deg); }
+  details.ts-card .ts-body { padding: 0 20px 20px; }
+
+  /* Footer */
+  footer { background: var(--bg-secondary); border-top: 1px solid var(--border); padding: 30px 0; text-align: center; }
+  footer p { font-family: 'Share Tech Mono', monospace; font-size: 0.74rem; color: var(--text-muted); letter-spacing: 2px; }
+  footer p span { color: var(--accent-blue); }
+  footer .conf { color: var(--accent-orange); }
+
+  @media print {
+    body { background: #fff; color: #000; }
+    nav, body::before { display: none; }
+    .card, details.ts-card { border: 1px solid #ccc; break-inside: avoid; }
+    details.ts-card { } details.ts-card .ts-body { display: block !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-content">
+      <div class="logo-area">
+        <div class="logo-icon">⚡</div>
+        <div class="logo-text">
+          <h1>ARCHITSEC Homelab</h1>
+          <p>Internal Infrastructure &amp; Network Documentation</p>
+        </div>
+      </div>
+      <div class="header-meta">
+        <div class="meta-item"><div class="label">Domain</div><div class="value">corp.architsec.com</div></div>
+        <div class="meta-item"><div class="label">Public DNS</div><div class="value">architsec.com</div></div>
+        <div class="meta-item"><div class="label">Revision</div><div class="value">v2.0 — Jun 2026</div></div>
+        <div class="meta-item"><div class="label">Classification</div><div class="value" style="color:var(--accent-orange)">INTERNAL CONFIDENTIAL</div></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="#topology">Topology</a></li>
+    <li><a href="#network">Network</a></li>
+    <li><a href="#hardware">Hardware</a></li>
+    <li><a href="#vms">VMs &amp; LXCs</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#credentials">Credentials</a></li>
+    <li><a href="#vpn">VPN</a></li>
+    <li><a href="#k8s">Kubernetes</a></li>
+    <li><a href="#devsecops">DevSecOps</a></li>
+    <li><a href="#dns">DNS</a></li>
+    <li><a href="#troubleshooting">Troubleshooting</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+<!-- ════════ 01 — TOPOLOGY ════════ -->
+<section id="topology">
+  <div class="section-header">
+    <span class="section-number">01</span>
+    <h2 class="section-title">Full Stack Topology</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="topology-container">
+    <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg" style="font-family:'Share Tech Mono',monospace;">
+      <defs>
+        <marker id="ar" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#00d4ff88"/>
+        </marker>
+      </defs>
+      <rect width="1200" height="800" fill="#060a0e"/>
+
+      <!-- Internet / Cloudflare -->
+      <rect x="380" y="20" width="440" height="34" rx="4" fill="#ff6b3511" stroke="#ff6b3544"/>
+      <text x="600" y="42" fill="#ff6b35" font-size="12" text-anchor="middle" letter-spacing="3">INTERNET · CLOUDFLARE</text>
+
+      <rect x="220" y="66" width="760" height="48" rx="6" fill="#ff6b3508" stroke="#ff6b3522" stroke-dasharray="4,3"/>
+      <text x="600" y="84" fill="#ff6b3588" font-size="9" text-anchor="middle" letter-spacing="2">CLOUDFLARE TUNNEL ENDPOINTS (no inbound ports)</text>
+      <text x="320" y="104" fill="#ff6b35" font-size="9" text-anchor="middle">git.</text>
+      <text x="470" y="104" fill="#ff6b35" font-size="9" text-anchor="middle">chat.</text>
+      <text x="620" y="104" fill="#ff6b35" font-size="9" text-anchor="middle">portal.</text>
+      <text x="770" y="104" fill="#ff6b35" font-size="9" text-anchor="middle">auth.architsec.com</text>
+
+      <!-- OCI VPS relay (cloud, right side) -->
+      <rect x="1000" y="66" width="180" height="86" rx="6" fill="#ff336611" stroke="#ff336644"/>
+      <text x="1090" y="88" fill="#ff3366" font-size="10" text-anchor="middle" font-weight="bold">OCI VPS RELAY</text>
+      <text x="1090" y="104" fill="#ff336688" font-size="8" text-anchor="middle">192.9.247.224</text>
+      <text x="1090" y="118" fill="#ff336688" font-size="8" text-anchor="middle">10.20.0.1/24</text>
+      <text x="1090" y="132" fill="#ff336666" font-size="7.5" text-anchor="middle">us-sanjose-1</text>
+      <text x="1090" y="145" fill="#ff336666" font-size="7.5" text-anchor="middle">WireGuard server</text>
+
+      <line x1="600" y1="54" x2="600" y2="66" stroke="#ff6b3544" stroke-width="1" marker-end="url(#ar)"/>
+
+      <!-- Edge router -->
+      <rect x="470" y="150" width="260" height="52" rx="6" fill="#00d4ff11" stroke="#00d4ff44"/>
+      <text x="600" y="170" fill="#00d4ff" font-size="11" text-anchor="middle" font-weight="bold">edge1 — FRESHTOMATO</text>
+      <text x="600" y="184" fill="#00d4ff88" font-size="8" text-anchor="middle">Netgear R6700v3 · 172.16.0.1 / 10.0.0.66</text>
+      <text x="600" y="196" fill="#00ffcc88" font-size="7.5" text-anchor="middle">WireGuard · NAT · Firewall · DDNS</text>
+      <line x1="600" y1="114" x2="600" y2="150" stroke="#ff6b3533" stroke-width="1"/>
+      <!-- WG tunnel edge1 <-> OCI -->
+      <path d="M 730 176 Q 900 150 1000 110" fill="none" stroke="#7a9bb5" stroke-width="1.2" stroke-dasharray="5,3"/>
+      <text x="900" y="150" fill="#7a9bb588" font-size="7.5" text-anchor="middle">WG tunnel UDP 51820</text>
+
+      <!-- Core switch -->
+      <rect x="440" y="226" width="320" height="52" rx="6" fill="#00d4ff11" stroke="#00d4ff44"/>
+      <text x="600" y="246" fill="#00d4ff" font-size="11" text-anchor="middle" font-weight="bold">swr1 — CISCO 3560-24P</text>
+      <text x="600" y="260" fill="#00d4ff88" font-size="8" text-anchor="middle">L3 core · 172.16.0.4 · VLAN SVIs</text>
+      <text x="600" y="272" fill="#00ffcc88" font-size="7.5" text-anchor="middle">9 VLANs · DHCP helper · ACLs · STP root</text>
+      <line x1="600" y1="202" x2="600" y2="226" stroke="#00d4ff66" stroke-width="1.5" marker-end="url(#ar)"/>
+
+      <!-- VLAN zone row 1 -->
+      <!-- INFRA -->
+      <rect x="40" y="320" width="250" height="120" rx="6" fill="#00ff8808" stroke="#00ff8833"/>
+      <text x="165" y="340" fill="#00ff88" font-size="10" text-anchor="middle" letter-spacing="1">VLAN 20 — INFRA</text>
+      <rect x="55" y="352" width="105" height="72" rx="4" fill="#00ff8811" stroke="#00ff8844"/>
+      <text x="107" y="370" fill="#00ff88" font-size="9" text-anchor="middle" font-weight="bold">DC1 — R420</text>
+      <text x="107" y="385" fill="#00ff8888" font-size="8" text-anchor="middle">172.16.20.8</text>
+      <text x="107" y="399" fill="#00ff8866" font-size="7" text-anchor="middle">PDC/DNS/DHCP</text>
+      <text x="107" y="412" fill="#00ff8866" font-size="7" text-anchor="middle">5 FSMO roles</text>
+      <rect x="170" y="352" width="105" height="72" rx="4" fill="#00ff8811" stroke="#00ff8844"/>
+      <text x="222" y="370" fill="#00ff88" font-size="9" text-anchor="middle" font-weight="bold">DC3 — X3250</text>
+      <text x="222" y="385" fill="#00ff8888" font-size="8" text-anchor="middle">172.16.20.5</text>
+      <text x="222" y="399" fill="#00ff8866" font-size="7" text-anchor="middle">Backup DC</text>
+      <text x="222" y="412" fill="#00ff8866" font-size="7" text-anchor="middle">5/5 repl ✓</text>
+
+      <!-- PROXMOX -->
+      <rect x="310" y="320" width="200" height="120" rx="6" fill="#00d4ff08" stroke="#00d4ff33"/>
+      <text x="410" y="340" fill="#00d4ff" font-size="10" text-anchor="middle" letter-spacing="1">VLAN 30 — PROXMOX</text>
+      <rect x="325" y="352" width="170" height="72" rx="4" fill="#00d4ff11" stroke="#00d4ff44"/>
+      <text x="410" y="370" fill="#00d4ff" font-size="9" text-anchor="middle" font-weight="bold">prox — Dell R630</text>
+      <text x="410" y="385" fill="#00d4ffaa" font-size="8" text-anchor="middle">172.16.30.25</text>
+      <text x="410" y="399" fill="#00d4ff88" font-size="7.5" text-anchor="middle">Proxmox VE 9.1.4</text>
+      <text x="410" y="412" fill="#00d4ff66" font-size="7" text-anchor="middle">40 vCPU · 125 GB · 8 VM / 8 LXC</text>
+
+      <!-- DMZ -->
+      <rect x="530" y="320" width="630" height="120" rx="6" fill="#ffd70008" stroke="#ffd70033"/>
+      <text x="845" y="340" fill="#ffd700" font-size="10" text-anchor="middle" letter-spacing="1">VLAN 60 — DMZ (LXC services)</text>
+      <g font-size="7.5">
+        <rect x="545" y="352" width="92" height="36" rx="3" fill="#ffd70011" stroke="#ffd70033"/>
+        <text x="591" y="367" fill="#ffd700" text-anchor="middle" font-weight="bold">Guacamole</text>
+        <text x="591" y="380" fill="#ffd70088" text-anchor="middle">.11 · L201</text>
+        <rect x="645" y="352" width="92" height="36" rx="3" fill="#ffd70011" stroke="#ffd70033"/>
+        <text x="691" y="367" fill="#ffd700" text-anchor="middle" font-weight="bold">Keycloak</text>
+        <text x="691" y="380" fill="#ffd70088" text-anchor="middle">.30 · L202</text>
+        <rect x="745" y="352" width="92" height="36" rx="3" fill="#ffd70011" stroke="#ffd70033"/>
+        <text x="791" y="367" fill="#ffd700" text-anchor="middle" font-weight="bold">Vault</text>
+        <text x="791" y="380" fill="#ffd70088" text-anchor="middle">.31 · L203</text>
+        <rect x="845" y="352" width="92" height="36" rx="3" fill="#ffd70011" stroke="#ffd70033"/>
+        <text x="891" y="367" fill="#ffd700" text-anchor="middle" font-weight="bold">Harbor</text>
+        <text x="891" y="380" fill="#ffd70088" text-anchor="middle">.35 · L207</text>
+        <rect x="945" y="352" width="92" height="36" rx="3" fill="#ffd70011" stroke="#ffd70033"/>
+        <text x="991" y="367" fill="#ffd700" text-anchor="middle" font-weight="bold">Portal</text>
+        <text x="991" y="380" fill="#ffd70088" text-anchor="middle">.36 · L208</text>
+        <rect x="1045" y="352" width="100" height="36" rx="3" fill="#ffd70011" stroke="#ffd70033"/>
+        <text x="1095" y="367" fill="#ffd700" text-anchor="middle" font-weight="bold">Nexus / pg01</text>
+        <text x="1095" y="380" fill="#ffd70088" text-anchor="middle">.33 / .34</text>
+        <text x="845" y="412" fill="#ffd70066" text-anchor="middle" font-size="7.5">+ WireGuard LXC .10 (superseded) · all VLAN 60</text>
+      </g>
+
+      <!-- VM-PROD row -->
+      <rect x="40" y="470" width="720" height="130" rx="6" fill="#ff6b3508" stroke="#ff6b3533"/>
+      <text x="400" y="490" fill="#ff6b35" font-size="10" text-anchor="middle" letter-spacing="1">VLAN 40 — VM-PROD</text>
+      <g font-size="7.5">
+        <rect x="55" y="502" width="100" height="40" rx="3" fill="#ff6b3511" stroke="#ff6b3533"/>
+        <text x="105" y="518" fill="#ff6b35" text-anchor="middle" font-weight="bold">GitLab</text>
+        <text x="105" y="532" fill="#ff6b3588" text-anchor="middle">.22 · git.</text>
+        <rect x="165" y="502" width="100" height="40" rx="3" fill="#ff6b3511" stroke="#ff6b3533"/>
+        <text x="215" y="518" fill="#ff6b35" text-anchor="middle" font-weight="bold">Mattermost</text>
+        <text x="215" y="532" fill="#ff6b3588" text-anchor="middle">.21 · chat.</text>
+        <rect x="275" y="502" width="100" height="40" rx="3" fill="#ff6b3511" stroke="#ff6b3533"/>
+        <text x="325" y="518" fill="#ff6b35" text-anchor="middle" font-weight="bold">Wazuh SIEM</text>
+        <text x="325" y="532" fill="#ff6b3588" text-anchor="middle">.5 · VMID 210</text>
+        <rect x="385" y="502" width="100" height="40" rx="3" fill="#ff6b3511" stroke="#ff6b3533"/>
+        <text x="435" y="518" fill="#ff6b35" text-anchor="middle" font-weight="bold">RD Gateway</text>
+        <text x="435" y="532" fill="#ff6b3588" text-anchor="middle">.10 · VMID 105</text>
+      </g>
+
+      <!-- K3s cluster -->
+      <rect x="500" y="498" width="245" height="92" rx="5" fill="#00ffcc08" stroke="#00ffcc33"/>
+      <text x="622" y="515" fill="#00ffcc" font-size="9" text-anchor="middle" letter-spacing="1">K3S CLUSTER</text>
+      <g font-size="7">
+        <rect x="510" y="522" width="72" height="40" rx="3" fill="#00ffcc11" stroke="#00ffcc33"/>
+        <text x="546" y="536" fill="#00ffcc" text-anchor="middle" font-weight="bold">k3s-ctrl</text>
+        <text x="546" y="548" fill="#00ffcc88" text-anchor="middle">.30</text>
+        <text x="546" y="558" fill="#00ffcc66" text-anchor="middle">ctrl-plane</text>
+        <rect x="588" y="522" width="72" height="40" rx="3" fill="#00ffcc11" stroke="#00ffcc33"/>
+        <text x="624" y="536" fill="#00ffcc" text-anchor="middle" font-weight="bold">k3s-w1</text>
+        <text x="624" y="548" fill="#00ffcc88" text-anchor="middle">.31</text>
+        <text x="624" y="558" fill="#00ffcc66" text-anchor="middle">worker</text>
+        <rect x="666" y="522" width="72" height="40" rx="3" fill="#00ffcc11" stroke="#00ffcc33"/>
+        <text x="702" y="536" fill="#00ffcc" text-anchor="middle" font-weight="bold">k3s-w2</text>
+        <text x="702" y="548" fill="#00ffcc88" text-anchor="middle">.32</text>
+        <text x="702" y="558" fill="#00ffcc66" text-anchor="middle">worker</text>
+        <text x="622" y="578" fill="#00ffcc66" text-anchor="middle" font-size="7">NATS JetStream (3-pod) · redline ns</text>
+      </g>
+
+      <!-- IoT / OOB -->
+      <rect x="780" y="470" width="180" height="58" rx="6" fill="#ff336608" stroke="#ff336633"/>
+      <text x="870" y="490" fill="#ff3366" font-size="10" text-anchor="middle" letter-spacing="1">VLAN 70 — IOT</text>
+      <text x="870" y="510" fill="#ff336688" font-size="8" text-anchor="middle">IP cameras · isolated</text>
+      <text x="870" y="522" fill="#ff336666" font-size="7" text-anchor="middle">DENY → 172.16.0.0/16</text>
+
+      <rect x="980" y="470" width="180" height="58" rx="6" fill="#7a9bb508" stroke="#7a9bb533"/>
+      <text x="1070" y="490" fill="#7a9bb5" font-size="10" text-anchor="middle" letter-spacing="1">VLAN 99 — OOB</text>
+      <text x="1070" y="510" fill="#7a9bb588" font-size="8" text-anchor="middle">iDRAC / LOM</text>
+      <text x="1070" y="522" fill="#7a9bb566" font-size="7" text-anchor="middle">out-of-band mgmt</text>
+
+      <!-- Switch to zones connectors -->
+      <line x1="540" y1="278" x2="165" y2="320" stroke="#00ff8822" stroke-width="1" stroke-dasharray="4,3"/>
+      <line x1="580" y1="278" x2="410" y2="320" stroke="#00d4ff22" stroke-width="1" stroke-dasharray="4,3"/>
+      <line x1="620" y1="278" x2="845" y2="320" stroke="#ffd70022" stroke-width="1" stroke-dasharray="4,3"/>
+      <line x1="560" y1="278" x2="400" y2="470" stroke="#ff6b3522" stroke-width="1" stroke-dasharray="4,3"/>
+
+      <!-- Legend -->
+      <rect x="40" y="630" width="1120" height="52" rx="4" fill="#00000044" stroke="#1e2d3d"/>
+      <text x="60" y="648" fill="#7a9bb5" font-size="8" letter-spacing="2">LEGEND</text>
+      <g font-size="7.5">
+        <rect x="120" y="640" width="11" height="8" rx="1" fill="#00ff8822" stroke="#00ff8844"/><text x="138" y="648" fill="#7a9bb5">INFRA / AD</text>
+        <rect x="210" y="640" width="11" height="8" rx="1" fill="#00d4ff22" stroke="#00d4ff44"/><text x="228" y="648" fill="#7a9bb5">Network / Proxmox</text>
+        <rect x="350" y="640" width="11" height="8" rx="1" fill="#ff6b3522" stroke="#ff6b3544"/><text x="368" y="648" fill="#7a9bb5">VM-PROD</text>
+        <rect x="450" y="640" width="11" height="8" rx="1" fill="#ffd70022" stroke="#ffd70044"/><text x="468" y="648" fill="#7a9bb5">DMZ / Security</text>
+        <rect x="570" y="640" width="11" height="8" rx="1" fill="#00ffcc22" stroke="#00ffcc44"/><text x="588" y="648" fill="#7a9bb5">K8s</text>
+        <rect x="640" y="640" width="11" height="8" rx="1" fill="#ff336622" stroke="#ff336644"/><text x="658" y="648" fill="#7a9bb5">IoT / Cloud</text>
+        <rect x="740" y="640" width="11" height="8" rx="1" fill="#7a9bb522" stroke="#7a9bb544"/><text x="758" y="648" fill="#7a9bb5">VPN / OOB</text>
+        <text x="60" y="672" fill="#7a9bb544">--- Dashed = VLAN routing / tunnel paths · 172.16.0.0/16 internal · v2.0 Jun 2026</text>
+      </g>
+
+      <text x="600" y="740" fill="#00d4ff18" font-size="54" text-anchor="middle" font-weight="bold" letter-spacing="8">ARCHITSEC</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ════════ 02 — NETWORK DESIGN ════════ -->
+<section id="network">
+  <div class="section-header">
+    <span class="section-number">02</span>
+    <h2 class="section-title">Network Design</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="card-title">📡 VLAN Segmentation</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup>
+            <col style="width:9%"><col style="width:20%"><col style="width:26%"><col style="width:23%"><col style="width:22%">
+          </colgroup>
+          <thead><tr><th>VLAN</th><th>Name</th><th>Subnet</th><th>Gateway</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td class="port">1</td><td>LEGACY</td><td class="ip">172.16.0.0/24</td><td class="ip">172.16.0.1</td><td>Flat legacy (phasing out)</td></tr>
+            <tr><td class="port">10</td><td>MGMT</td><td class="ip">172.16.10.0/24</td><td class="ip">172.16.10.1</td><td>Switch / device mgmt</td></tr>
+            <tr><td class="port">20</td><td>INFRA</td><td class="ip">172.16.20.0/24</td><td class="ip">172.16.20.1</td><td>Domain controllers</td></tr>
+            <tr><td class="port">30</td><td>PROXMOX</td><td class="ip">172.16.30.0/24</td><td class="ip">172.16.30.1</td><td>Proxmox hypervisor</td></tr>
+            <tr><td class="port">40</td><td>VM-PROD</td><td class="ip">172.16.40.0/24</td><td class="ip">172.16.40.1</td><td>Production VMs / K3s</td></tr>
+            <tr><td class="port">50</td><td>CONTAINERS</td><td class="ip">172.16.50.0/24</td><td class="ip">172.16.50.1</td><td>LXC containers</td></tr>
+            <tr><td class="port">60</td><td>DMZ</td><td class="ip">172.16.60.0/24</td><td class="ip">172.16.60.1</td><td>DMZ / VPN / remote</td></tr>
+            <tr><td class="port">70</td><td>IOT</td><td class="ip">172.16.70.0/24</td><td class="ip">172.16.70.1</td><td>IoT / surveillance</td></tr>
+            <tr><td class="port">99</td><td>OOB-MGMT</td><td class="ip">172.16.99.0/24</td><td class="ip">172.16.99.1</td><td>iDRAC / out-of-band</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔒 Firewall ACLs (swr1)</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:24%"><col style="width:30%"><col style="width:30%"><col style="width:16%"></colgroup>
+          <thead><tr><th>ACL</th><th>Source</th><th>Destination</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>ACL-IOT-IN</td><td class="ip">172.16.70.0/24</td><td class="ip">172.16.0.0/16</td><td class="status-up">DENY</td></tr>
+            <tr><td>ACL-DMZ-IN</td><td class="ip">172.16.60.0/24</td><td class="ip">172.16.20.0/24</td><td class="status-up">DENY</td></tr>
+            <tr><td>ACL-OOB-IN</td><td class="ip">172.16.99.0/24</td><td>Unrestricted</td><td class="status-pending">PERMIT</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="divider"></div>
+      <div class="card-title">🗺️ Static Routes (swr1)</div>
+      <div class="code-block">ip route 10.10.0.0  255.255.255.0   172.16.0.1   ! WireGuard client subnet
+ip route 10.20.0.0  255.255.255.0   172.16.0.1   ! OCI relay tunnel
+ip route 172.16.0.111 255.255.255.255 Null0      ! ARP suppress
+ip route 172.16.0.5   255.255.255.255 Null0      ! stale ARP
+ip route 172.16.0.6   255.255.255.255 Null0      ! stale ARP</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔌 swr1 Port Assignments — Cisco 3560-24P</div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <colgroup><col style="width:9%"><col style="width:20%"><col style="width:12%"><col style="width:22%"><col style="width:37%"></colgroup>
+        <thead><tr><th>Port</th><th>Description</th><th>Mode</th><th>VLAN(s)</th><th>Connected Device</th></tr></thead>
+        <tbody>
+          <tr><td class="port">Gi0/2</td><td>IPCAM01</td><td>Access</td><td class="port">70</td><td>IP Camera</td></tr>
+          <tr><td class="port">Gi0/4</td><td>UNUSED</td><td>—</td><td>—</td><td>shutdown</td></tr>
+          <tr><td class="port">Gi0/6</td><td>DC1-PRIMARY</td><td>Access</td><td class="port">20</td><td>DC1 NT-1 NIC</td></tr>
+          <tr><td class="port">Gi0/9</td><td>DC1-MGMT</td><td>Access</td><td class="port">10</td><td>DC1 NT-3 MGMT NIC</td></tr>
+          <tr><td class="port">Gi0/10</td><td>DC1-IDRAC</td><td>Access</td><td class="port">99</td><td>DC1 iDRAC</td></tr>
+          <tr><td class="port">Gi0/11</td><td>DC3-PRIMARY</td><td>Access</td><td class="port">20</td><td>DC3 NIC</td></tr>
+          <tr><td class="port">Gi0/19</td><td>UNUSED</td><td>—</td><td>—</td><td>shutdown</td></tr>
+          <tr><td class="port">Gi0/20</td><td>PROXMOX-TRUNK</td><td>Trunk</td><td class="port">1,40,50,60,70,99</td><td>Proxmox vmbr0 (mgmt NIC)</td></tr>
+          <tr><td class="port">Gi0/21</td><td>DC1-R420-IDRAC</td><td>Access</td><td class="port">99</td><td>R420 iDRAC</td></tr>
+          <tr><td class="port">Gi0/22</td><td>DC1-IDRAC-LOM</td><td>Access</td><td class="port">99</td><td>DC1 LOM iDRAC</td></tr>
+          <tr><td class="port">Gi0/23</td><td>PROXMOX-MGMT</td><td>Access</td><td class="port">30</td><td>Proxmox vmbr1 (secure NIC)</td></tr>
+          <tr><td class="port">Gi0/24</td><td>UPLINK-EDGE1</td><td>Trunk</td><td class="port">ALL</td><td>edge1 FreshTomato LAN</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ 03 — HARDWARE ════════ -->
+<section id="hardware">
+  <div class="section-header">
+    <span class="section-number">03</span>
+    <h2 class="section-title">Hardware Inventory</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">🌐 edge1 — FreshTomato</div>
+      <div class="kv-list">
+        <div class="kv-item"><span class="kv-key">Hardware</span><span class="kv-val">Netgear Nighthawk R6700v3</span></div>
+        <div class="kv-item"><span class="kv-key">OS</span><span class="kv-val">FreshTomato 2026.1</span></div>
+        <div class="kv-item"><span class="kv-key">LAN IP</span><span class="kv-val" style="color:var(--accent-cyan)">172.16.0.1</span></div>
+        <div class="kv-item"><span class="kv-key">WAN IP</span><span class="kv-val" style="color:var(--accent-cyan)">10.0.0.66 (CGNAT)</span></div>
+        <div class="kv-item"><span class="kv-key">Role</span><span class="kv-val">Edge router · NAT · WireGuard server · firewall · DDNS</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔀 swr1 — Cisco 3560-24P</div>
+      <div class="kv-list">
+        <div class="kv-item"><span class="kv-key">Hardware</span><span class="kv-val">Cisco Catalyst 3560-24P</span></div>
+        <div class="kv-item"><span class="kv-key">IOS</span><span class="kv-val">15.0(2)SE11</span></div>
+        <div class="kv-item"><span class="kv-key">VLAN 1 IP</span><span class="kv-val" style="color:var(--accent-cyan)">172.16.0.4</span></div>
+        <div class="kv-item"><span class="kv-key">MGMT SVI</span><span class="kv-val" style="color:var(--accent-cyan)">172.16.10.1</span></div>
+        <div class="kv-item"><span class="kv-key">STP</span><span class="kv-val">Rapid-PVST · priority 4096 (root)</span></div>
+        <div class="kv-item"><span class="kv-key">Role</span><span class="kv-val">L3 core switch · 9 VLANs · DHCP helper · ACLs</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🖥️ DC1 — Dell PowerEdge R420</div>
+      <div class="kv-list">
+        <div class="kv-item"><span class="kv-key">OS</span><span class="kv-val">Windows Server 2019</span></div>
+        <div class="kv-item"><span class="kv-key">IP (V20)</span><span class="kv-val" style="color:var(--accent-cyan)">172.16.20.8</span></div>
+        <div class="kv-item"><span class="kv-key">MGMT IP</span><span class="kv-val" style="color:var(--accent-cyan)">172.16.10.5 (NT-3)</span></div>
+        <div class="kv-item"><span class="kv-key">Roles</span><span class="kv-val">PDC · DNS · DHCP · KDC · ADWS · Netlogon</span></div>
+        <div class="kv-item"><span class="kv-key">FSMO</span><span class="kv-val">All 5 FSMO roles</span></div>
+        <div class="kv-item"><span class="kv-key">Switch Port</span><span class="kv-val">Gi0/6 (VLAN 20)</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🖥️ DC3 — IBM X3250 M4</div>
+      <div class="kv-list">
+        <div class="kv-item"><span class="kv-key">OS</span><span class="kv-val">Windows Server 2022</span></div>
+        <div class="kv-item"><span class="kv-key">IP (V20)</span><span class="kv-val" style="color:var(--accent-cyan)">172.16.20.5</span></div>
+        <div class="kv-item"><span class="kv-key">Roles</span><span class="kv-val">Backup DC · DNS · KDC · Netlogon</span></div>
+        <div class="kv-item"><span class="kv-key">Switch Port</span><span class="kv-val">Gi0/11 (VLAN 20)</span></div>
+        <div class="kv-item"><span class="kv-key">AD Repl</span><span class="kv-val" style="color:var(--accent-green)">5/5 partitions ✓</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚡ prox — Dell PowerEdge R630</div>
+      <div class="kv-list">
+        <div class="kv-item"><span class="kv-key">OS</span><span class="kv-val">Proxmox VE 9.1.4</span></div>
+        <div class="kv-item"><span class="kv-key">IP</span><span class="kv-val" style="color:var(--accent-cyan)">172.16.30.25 (VLAN 30)</span></div>
+        <div class="kv-item"><span class="kv-key">CPU</span><span class="kv-val">40 vCPU</span></div>
+        <div class="kv-item"><span class="kv-key">RAM</span><span class="kv-val">125 GB</span></div>
+        <div class="kv-item"><span class="kv-key">Storage</span><span class="kv-val">BaseStore 916 GB + local-lvm 141 GB</span></div>
+        <div class="kv-item"><span class="kv-key">NICs</span><span class="kv-val">vmbr0 trunk (Gi0/20) · vmbr1 V30 (Gi0/23)</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">☁️ OCI VPS — WireGuard Relay</div>
+      <div class="kv-list">
+        <div class="kv-item"><span class="kv-key">Provider</span><span class="kv-val">Oracle Cloud (Always Free)</span></div>
+        <div class="kv-item"><span class="kv-key">Region</span><span class="kv-val">us-sanjose-1</span></div>
+        <div class="kv-item"><span class="kv-key">Public IP</span><span class="kv-val" style="color:var(--accent-cyan)">192.9.247.224</span></div>
+        <div class="kv-item"><span class="kv-key">Private IP</span><span class="kv-val" style="color:var(--accent-cyan)">172.16.3.18</span></div>
+        <div class="kv-item"><span class="kv-key">OS</span><span class="kv-val">Ubuntu 22.04</span></div>
+        <div class="kv-item"><span class="kv-key">Compartment</span><span class="kv-val">architsec-devops</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ 04 — VMs & LXCs ════════ -->
+<section id="vms">
+  <div class="section-header">
+    <span class="section-number">04</span>
+    <h2 class="section-title">Virtual Machines &amp; LXC Containers</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">🖥️ Virtual Machines (QEMU/KVM)</div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <colgroup>
+          <col style="width:6%"><col style="width:13%"><col style="width:12%"><col style="width:5%">
+          <col style="width:12%"><col style="width:7%"><col style="width:7%"><col style="width:13%"><col style="width:25%">
+        </colgroup>
+        <thead><tr><th>VMID</th><th>Name</th><th>IP</th><th>VLAN</th><th>OS</th><th>RAM</th><th>Disk</th><th>Status</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td class="port">104</td><td class="highlight">pfsense</td><td class="ip">—</td><td class="port">—</td><td>pfSense</td><td>12 GB</td><td>15 GB</td><td><span class="badge badge-yellow">STANDBY</span></td><td>Spare firewall</td></tr>
+          <tr><td class="port">105</td><td class="highlight">server22-RDG</td><td class="ip">172.16.40.10</td><td class="port">40</td><td>WS 2022</td><td>8 GB</td><td>50 GB</td><td><span class="badge badge-green">RUNNING</span></td><td>RD Gateway</td></tr>
+          <tr><td class="port">108</td><td class="highlight">mattermost01</td><td class="ip">172.16.40.21</td><td class="port">40</td><td>Ubuntu 22.04</td><td>12 GB</td><td>40 GB</td><td><span class="badge badge-green">RUNNING</span></td><td>chat.architsec.com</td></tr>
+          <tr><td class="port">109</td><td class="highlight">gitlab01</td><td class="ip">172.16.40.22</td><td class="port">40</td><td>Ubuntu 22.04</td><td>8 GB</td><td>50 GB</td><td><span class="badge badge-green">RUNNING</span></td><td>git.architsec.com</td></tr>
+          <tr><td class="port">210</td><td class="highlight">wazuh-siem</td><td class="ip">172.16.40.5</td><td class="port">40</td><td>WS 2022</td><td>12 GB</td><td>100 GB</td><td><span class="badge badge-green">RUNNING</span></td><td>Wazuh Manager + SIEM</td></tr>
+          <tr><td class="port">211</td><td class="highlight">k3s-ctrl</td><td class="ip">172.16.40.30</td><td class="port">40</td><td>Ubuntu 22.04</td><td>8 GB</td><td>34 GB</td><td><span class="badge badge-green">RUNNING</span></td><td>K3s Control Plane</td></tr>
+          <tr><td class="port">212</td><td class="highlight">k3s-w1</td><td class="ip">172.16.40.31</td><td class="port">40</td><td>Ubuntu 22.04</td><td>20 GB</td><td>102 GB</td><td><span class="badge badge-green">RUNNING</span></td><td>K3s Worker 1</td></tr>
+          <tr><td class="port">213</td><td class="highlight">k3s-w2</td><td class="ip">172.16.40.32</td><td class="port">40</td><td>Ubuntu 22.04</td><td>20 GB</td><td>102 GB</td><td><span class="badge badge-green">RUNNING</span></td><td>K3s Worker 2</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📦 LXC Containers</div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <colgroup>
+          <col style="width:6%"><col style="width:23%"><col style="width:12%"><col style="width:5%">
+          <col style="width:8%"><col style="width:7%"><col style="width:13%"><col style="width:26%">
+        </colgroup>
+        <thead><tr><th>VMID</th><th>Name</th><th>IP</th><th>VLAN</th><th>RAM</th><th>Disk</th><th>Status</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td class="port">200</td><td class="highlight">vpn.corp.architsec.com</td><td class="ip">172.16.60.10</td><td class="port">60</td><td>512 MB</td><td>4 GB</td><td><span class="badge badge-yellow">SUPERSEDED</span></td><td>WireGuard LXC (replaced by FreshTomato)</td></tr>
+          <tr><td class="port">201</td><td class="highlight">guac.corp.architsec.com</td><td class="ip">172.16.60.11</td><td class="port">60</td><td>2 GB</td><td>16 GB</td><td><span class="badge badge-green">RUNNING</span></td><td>Guacamole browser remote access</td></tr>
+          <tr><td class="port">202</td><td class="highlight">keycloak.corp.architsec.com</td><td class="ip">172.16.60.30</td><td class="port">60</td><td>2 GB</td><td>16 GB</td><td><span class="badge badge-green">RUNNING</span></td><td>Keycloak SSO — auth.architsec.com</td></tr>
+          <tr><td class="port">203</td><td class="highlight">vault.corp.architsec.com</td><td class="ip">172.16.60.31</td><td class="port">60</td><td>2 GB</td><td>16 GB</td><td><span class="badge badge-green">RUNNING</span></td><td>HashiCorp Vault secrets</td></tr>
+          <tr><td class="port">204</td><td class="highlight">pg01</td><td class="ip">172.16.60.34</td><td class="port">60</td><td>2 GB</td><td>20 GB</td><td><span class="badge badge-green">RUNNING</span></td><td>PostgreSQL database</td></tr>
+          <tr><td class="port">206</td><td class="highlight">nexus.corp.architsec.com</td><td class="ip">172.16.60.33</td><td class="port">60</td><td>4 GB</td><td>40 GB</td><td><span class="badge badge-green">RUNNING</span></td><td>Nexus OSS artifact manager</td></tr>
+          <tr><td class="port">207</td><td class="highlight">harbor.corp.architsec.com</td><td class="ip">172.16.60.35</td><td class="port">60</td><td>4 GB</td><td>40 GB</td><td><span class="badge badge-green">RUNNING</span></td><td>Harbor container registry</td></tr>
+          <tr><td class="port">208</td><td class="highlight">portal.corp.architsec.com</td><td class="ip">172.16.60.36</td><td class="port">60</td><td>2 GB</td><td>20 GB</td><td><span class="badge badge-green">RUNNING</span></td><td>REDLINE Dev Portal — portal.architsec.com</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ 05 — SERVICES ════════ -->
+<section id="services">
+  <div class="section-header">
+    <span class="section-number">05</span>
+    <h2 class="section-title">Services &amp; Access</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="card-title">🌐 Public Services (Cloudflare Tunnel)</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:20%"><col style="width:28%"><col style="width:26%"><col style="width:26%"></colgroup>
+          <thead><tr><th>Service</th><th>Public URL</th><th>Origin</th><th>Tunnel</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">GitLab</td><td style="color:var(--accent-blue)">git.architsec.com</td><td class="ip">172.16.40.22:443</td><td>architsec-homelab</td></tr>
+            <tr><td class="highlight">Mattermost</td><td style="color:var(--accent-blue)">chat.architsec.com</td><td class="ip">172.16.40.21:8065</td><td>architsec-mattermost</td></tr>
+            <tr><td class="highlight">Dev Portal</td><td style="color:var(--accent-blue)">portal.architsec.com</td><td class="ip">172.16.60.36:3000</td><td>architsec-portal</td></tr>
+            <tr><td class="highlight">Keycloak SSO</td><td style="color:var(--accent-blue)">auth.architsec.com</td><td class="ip">172.16.60.30:8080</td><td>architsec-keycloak</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔒 Internal Services (VPN Required)</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:44%"><col style="width:36%"><col style="width:20%"></colgroup>
+          <thead><tr><th>Service</th><th>Internal IP</th><th>Port</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">Proxmox UI</td><td class="ip">172.16.30.25</td><td class="port">8006</td></tr>
+            <tr><td class="highlight">Guacamole</td><td class="ip">172.16.60.11</td><td class="port">80</td></tr>
+            <tr><td class="highlight">Vault UI</td><td class="ip">172.16.60.31</td><td class="port">8200</td></tr>
+            <tr><td class="highlight">Harbor Registry</td><td class="ip">172.16.60.35</td><td class="port">80</td></tr>
+            <tr><td class="highlight">Nexus OSS</td><td class="ip">172.16.60.33</td><td class="port">8081</td></tr>
+            <tr><td class="highlight">Wazuh Dashboard</td><td class="ip">172.16.40.5</td><td class="port">443</td></tr>
+            <tr><td class="highlight">K3s API</td><td class="ip">172.16.40.30</td><td class="port">6443</td></tr>
+            <tr><td class="highlight">NATS Monitor</td><td class="ip">172.16.40.30</td><td class="port">30222</td></tr>
+            <tr><td class="highlight">Keycloak</td><td class="ip">172.16.60.30</td><td class="port">8080</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚙️ K3s Workloads</div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <colgroup><col style="width:16%"><col style="width:22%"><col style="width:11%"><col style="width:16%"><col style="width:21%"><col style="width:14%"></colgroup>
+        <thead><tr><th>Namespace</th><th>Workload</th><th>Replicas</th><th>Type</th><th>Service</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="highlight">nats</td><td>nats</td><td>3</td><td>StatefulSet</td><td>ClusterIP + NodePort 30222</td><td><span class="badge badge-green">RUNNING</span></td></tr>
+          <tr><td class="highlight">kube-system</td><td>coredns</td><td>1</td><td>Deployment</td><td>ClusterIP</td><td><span class="badge badge-green">RUNNING</span></td></tr>
+          <tr><td class="highlight">kube-system</td><td>metrics-server</td><td>1</td><td>Deployment</td><td>ClusterIP</td><td><span class="badge badge-green">RUNNING</span></td></tr>
+          <tr><td class="highlight">kube-system</td><td>local-path-provisioner</td><td>1</td><td>Deployment</td><td>—</td><td><span class="badge badge-green">RUNNING</span></td></tr>
+          <tr><td class="highlight">redline</td><td>gitlab-ci SA</td><td>—</td><td>ServiceAccount</td><td>cluster-admin binding</td><td><span class="badge badge-green">ACTIVE</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ 06 — CREDENTIALS ════════ -->
+<section id="credentials">
+  <div class="section-header">
+    <span class="section-number">06</span>
+    <h2 class="section-title">Credentials</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="cred-warning">
+    🔐 <strong>SECRETS POLICY:</strong> No plaintext credentials are stored in this document. All secrets live in HashiCorp Vault at <span style="color:var(--accent-cyan)">172.16.60.31:8200</span>. Retrieve with the listed <code style="color:var(--accent-cyan)">vault kv get</code> paths after authenticating. Rotate on a 90-day cycle.
+  </div>
+
+  <div class="grid-2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="card-title">🖥️ Windows / Active Directory</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:26%"><col style="width:32%"><col style="width:42%"></colgroup>
+          <thead><tr><th>System</th><th>Username</th><th>Secret Reference</th></tr></thead>
+          <tbody>
+            <tr><td>AD Domain Admin</td><td class="highlight">master@corp.architsec.com</td><td class="cred">vault kv get secret/windows/domain-admin</td></tr>
+            <tr><td>DC1 Local Admin</td><td class="highlight">Administrator</td><td class="cred">vault kv get secret/windows/local-admin</td></tr>
+            <tr><td>svc-ldap-bind</td><td class="highlight">svc-ldap-bind</td><td class="cred">vault kv get secret/services/ldap-bind</td></tr>
+            <tr><td>Wazuh Agent</td><td class="highlight">—</td><td>Auto-deployed via GPO policy</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🐧 Linux / SSH</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:26%"><col style="width:20%"><col style="width:54%"></colgroup>
+          <thead><tr><th>Host</th><th>Username</th><th>Secret Reference</th></tr></thead>
+          <tbody>
+            <tr><td>Proxmox (prox)</td><td class="highlight">root</td><td class="cred">vault kv get secret/linux/proxmox-root</td></tr>
+            <tr><td>gitlab01 / mattermost01</td><td class="highlight">archadmin</td><td class="cred">vault kv get secret/linux/archadmin</td></tr>
+            <tr><td>k3s-ctrl / w1 / w2</td><td class="highlight">archadmin</td><td class="cred">vault kv get secret/linux/archadmin</td></tr>
+            <tr><td>OCI VPS</td><td class="highlight">ubuntu</td><td class="cred">vault kv get secret/ssh/oci-vps-key</td></tr>
+            <tr><td>LXCs (all)</td><td class="highlight">root</td><td class="cred">vault kv get secret/linux/lxc-root</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🌐 Web Services</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:24%"><col style="width:24%"><col style="width:52%"></colgroup>
+          <thead><tr><th>Service</th><th>Username</th><th>Secret Reference</th></tr></thead>
+          <tbody>
+            <tr><td>Proxmox UI</td><td class="highlight">root@pam / AD</td><td>AD group: Proxmox-Admins</td></tr>
+            <tr><td>Guacamole</td><td class="highlight">admin</td><td class="cred">vault kv get secret/services/guacamole</td></tr>
+            <tr><td>GitLab</td><td class="highlight">root / AD</td><td>AD-integrated (Keycloak SSO)</td></tr>
+            <tr><td>Harbor</td><td class="highlight">admin</td><td class="cred">vault kv get secret/services/harbor</td></tr>
+            <tr><td>Nexus OSS</td><td class="highlight">admin</td><td class="cred">vault kv get secret/services/nexus</td></tr>
+            <tr><td>Keycloak</td><td class="highlight">admin</td><td class="cred">vault kv get secret/services/keycloak</td></tr>
+            <tr><td>Mattermost</td><td class="highlight">AD SSO</td><td>Keycloak OIDC</td></tr>
+            <tr><td>Dev Portal</td><td class="highlight">—</td><td>Cloudflare Access (SSO)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔑 Vault, Tokens &amp; Keys</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:34%"><col style="width:66%"></colgroup>
+          <thead><tr><th>Item</th><th>Secret Reference</th></tr></thead>
+          <tbody>
+            <tr><td>Vault Root Token</td><td class="cred">vault kv get secret/vault/root-token</td></tr>
+            <tr><td>Vault Unseal Key 1</td><td class="cred">vault kv get secret/vault/unseal-key-1</td></tr>
+            <tr><td>Vault Unseal Key 2</td><td class="cred">vault kv get secret/vault/unseal-key-2</td></tr>
+            <tr><td>Vault Unseal Key 3</td><td class="cred">vault kv get secret/vault/unseal-key-3</td></tr>
+            <tr><td>GitLab PAT</td><td class="cred">vault kv get secret/tokens/gitlab-pat</td></tr>
+            <tr><td>GitHub PAT</td><td class="cred">vault kv get secret/tokens/github-pat</td></tr>
+            <tr><td>K3s SA Token</td><td class="cred">vault kv get secret/k8s/gitlab-ci-sa-token</td></tr>
+            <tr><td>Keycloak OIDC Secret</td><td class="cred">vault kv get secret/services/keycloak-oidc-secret</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="alert alert-info" style="margin-top:12px">ℹ️ Vault unseal threshold: 2 of 3. Store unseal shares with separate custodians.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ 07 — VPN ════════ -->
+<section id="vpn">
+  <div class="section-header">
+    <span class="section-number">07</span>
+    <h2 class="section-title">VPN Architecture</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="topology-container" style="margin-bottom:16px">
+    <svg viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg" style="font-family:'Share Tech Mono',monospace;">
+      <defs>
+        <marker id="vp" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#7a9bb5"/>
+        </marker>
+      </defs>
+      <rect width="900" height="260" fill="#060a0e"/>
+
+      <rect x="20" y="92" width="130" height="76" rx="6" fill="#7a9bb511" stroke="#7a9bb544"/>
+      <text x="85" y="120" fill="#7a9bb5" font-size="10" text-anchor="middle" font-weight="bold">Parrot Client</text>
+      <text x="85" y="136" fill="#7a9bb588" font-size="8" text-anchor="middle">10.20.0.3/32</text>
+      <text x="85" y="152" fill="#7a9bb566" font-size="7.5" text-anchor="middle">roaming endpoint</text>
+
+      <line x1="150" y1="130" x2="225" y2="130" stroke="#7a9bb5" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#vp)"/>
+      <text x="187" y="120" fill="#7a9bb588" font-size="7.5" text-anchor="middle">UDP 51820</text>
+
+      <rect x="225" y="80" width="160" height="100" rx="6" fill="#ff336611" stroke="#ff336644"/>
+      <text x="305" y="106" fill="#ff3366" font-size="10" text-anchor="middle" font-weight="bold">OCI VPS RELAY</text>
+      <text x="305" y="122" fill="#ff336688" font-size="8" text-anchor="middle">192.9.247.224</text>
+      <text x="305" y="137" fill="#ff336688" font-size="8" text-anchor="middle">10.20.0.1/24</text>
+      <text x="305" y="153" fill="#ff336666" font-size="7.5" text-anchor="middle">WG server · MASQUERADE</text>
+      <text x="305" y="167" fill="#ff336666" font-size="7" text-anchor="middle">OCI SL: UDP dst 51820</text>
+
+      <line x1="385" y1="130" x2="460" y2="130" stroke="#7a9bb5" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#vp)"/>
+      <text x="422" y="120" fill="#7a9bb588" font-size="7.5" text-anchor="middle">relayed</text>
+
+      <rect x="460" y="80" width="160" height="100" rx="6" fill="#00d4ff11" stroke="#00d4ff44"/>
+      <text x="540" y="106" fill="#00d4ff" font-size="9.5" text-anchor="middle" font-weight="bold">FRESHTOMATO WG</text>
+      <text x="540" y="122" fill="#00d4ff88" font-size="8" text-anchor="middle">edge1 · 172.16.0.1</text>
+      <text x="540" y="137" fill="#00d4ff88" font-size="8" text-anchor="middle">10.20.0.2/24 · wg0</text>
+      <text x="540" y="153" fill="#00d4ff66" font-size="7.5" text-anchor="middle">dials out to OCI</text>
+      <text x="540" y="167" fill="#00d4ff66" font-size="7" text-anchor="middle">keepalive 25s</text>
+
+      <line x1="620" y1="130" x2="695" y2="130" stroke="#00d4ff66" stroke-width="1.5" marker-end="url(#vp)"/>
+      <text x="657" y="120" fill="#00d4ff88" font-size="7.5" text-anchor="middle">via swr1</text>
+
+      <rect x="695" y="64" width="185" height="132" rx="6" fill="#00ff8808" stroke="#00ff8833"/>
+      <text x="787" y="88" fill="#00ff88" font-size="9" text-anchor="middle" font-weight="bold">INTERNAL VLANs</text>
+      <text x="787" y="106" fill="#00ff8888" font-size="8" text-anchor="middle">172.16.0.0/16</text>
+      <text x="787" y="122" fill="#00ff8866" font-size="7.5" text-anchor="middle">DC1 172.16.20.8</text>
+      <text x="787" y="136" fill="#00ff8866" font-size="7.5" text-anchor="middle">Prox 172.16.30.25</text>
+      <text x="787" y="150" fill="#00ff8866" font-size="7.5" text-anchor="middle">VMs 172.16.40.x</text>
+      <text x="787" y="164" fill="#00ff8866" font-size="7.5" text-anchor="middle">DMZ 172.16.60.x</text>
+      <text x="787" y="182" fill="#00ff8844" font-size="7" text-anchor="middle">return: 10.20.0.0/24 → .0.1</text>
+
+      <text x="450" y="222" fill="#7a9bb566" font-size="8" text-anchor="middle">Round-trip ~95–110 ms (Parrot → OCI San Jose → homelab) · AllowedIPs 172.16.0.0/16, 10.20.0.0/24</text>
+      <text x="450" y="240" fill="#7a9bb544" font-size="7.5" text-anchor="middle">CGNAT bypass: edge1 dials outbound to OCI; clients connect to OCI public endpoint</text>
+    </svg>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">🔐 WireGuard Peers</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:30%"><col style="width:24%"><col style="width:46%"></colgroup>
+          <thead><tr><th>Peer</th><th>Tunnel IP</th><th>Public Key</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">OCI Relay</td><td class="ip">10.20.0.1/24</td><td class="cred">vault kv get secret/vpn/oci-relay-pubkey</td></tr>
+            <tr><td class="highlight">edge1 (FreshTomato)</td><td class="ip">10.20.0.2/32</td><td class="cred">vault kv get secret/vpn/edge1-pubkey</td></tr>
+            <tr><td class="highlight">Parrot Client</td><td class="ip">10.20.0.3/32</td><td class="cred">vault kv get secret/vpn/parrot-pubkey</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="alert alert-info" style="margin-top:12px">ℹ️ Endpoint: <code>192.9.247.224:51820</code> · DNS pushed: 172.16.20.8, 172.16.20.5</div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚙️ FreshTomato Firewall Script</div>
+      <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:10px">Add under <strong>Administration → Scripts → Firewall</strong> to persist across reboots:</p>
+      <div class="code-block">iptables -D FORWARD -i wg0 -m state \
+  --state NEW -j DROP 2>/dev/null</div>
+      <div class="divider"></div>
+      <div class="card-title">📋 Parrot Client Config</div>
+      <div class="code-block">[Interface]
+Address    = 10.20.0.3/32
+DNS        = 172.16.20.8, 172.16.20.5
+PrivateKey = &lt;vault kv get secret/vpn/parrot-privkey&gt;
+
+[Peer]
+PublicKey  = &lt;vault kv get secret/vpn/oci-relay-pubkey&gt;
+Endpoint   = 192.9.247.224:51820
+AllowedIPs = 172.16.0.0/16, 10.20.0.0/24
+PersistentKeepalive = 25</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ 08 — KUBERNETES ════════ -->
+<section id="k8s">
+  <div class="section-header">
+    <span class="section-number">08</span>
+    <h2 class="section-title">Kubernetes Cluster (K3s)</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid-3" style="margin-bottom:16px">
+    <div class="card">
+      <div class="card-title">☸️ k3s-ctrl — Control Plane</div>
+      <div class="kv-list">
+        <div class="kv-item"><span class="kv-key">IP</span><span class="kv-val" style="color:var(--accent-cyan)">172.16.40.30</span></div>
+        <div class="kv-item"><span class="kv-key">Role</span><span class="kv-val">control-plane</span></div>
+        <div class="kv-item"><span class="kv-key">vCPU / RAM</span><span class="kv-val">4 / 8 GB</span></div>
+        <div class="kv-item"><span class="kv-key">Disk</span><span class="kv-val">34 GB (cloud-init)</span></div>
+        <div class="kv-item"><span class="kv-key">K3s</span><span class="kv-val">v1.35.4+k3s1</span></div>
+        <div class="kv-item"><span class="kv-key">Runtime</span><span class="kv-val">containerd 2.2.3-k3s1</span></div>
+        <div class="kv-item"><span class="kv-key">Runner</span><span class="kv-val" style="color:var(--accent-green)">GitLab Runner online</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">☸️ k3s-w1 — Worker 1</div>
+      <div class="kv-list">
+        <div class="kv-item"><span class="kv-key">IP</span><span class="kv-val" style="color:var(--accent-cyan)">172.16.40.31</span></div>
+        <div class="kv-item"><span class="kv-key">Role</span><span class="kv-val">worker</span></div>
+        <div class="kv-item"><span class="kv-key">vCPU / RAM</span><span class="kv-val">2 / 20 GB</span></div>
+        <div class="kv-item"><span class="kv-key">Disk</span><span class="kv-val">102 GB</span></div>
+        <div class="kv-item"><span class="kv-key">K3s</span><span class="kv-val">v1.35.4+k3s1</span></div>
+        <div class="kv-item"><span class="kv-key">Pods</span><span class="kv-val">nats-0</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">☸️ k3s-w2 — Worker 2</div>
+      <div class="kv-list">
+        <div class="kv-item"><span class="kv-key">IP</span><span class="kv-val" style="color:var(--accent-cyan)">172.16.40.32</span></div>
+        <div class="kv-item"><span class="kv-key">Role</span><span class="kv-val">worker</span></div>
+        <div class="kv-item"><span class="kv-key">vCPU / RAM</span><span class="kv-val">2 / 20 GB</span></div>
+        <div class="kv-item"><span class="kv-key">Disk</span><span class="kv-val">102 GB</span></div>
+        <div class="kv-item"><span class="kv-key">K3s</span><span class="kv-val">v1.35.4+k3s1</span></div>
+        <div class="kv-item"><span class="kv-key">Pods</span><span class="kv-val">nats-1</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">🔧 K3s Configuration</div>
+      <div class="code-block">Install flags:
+  --disable traefik
+  --node-ip 172.16.40.30
+  --advertise-address 172.16.40.30
+  --cluster-cidr 10.42.0.0/16
+  --service-cidr 10.43.0.0/16
+
+/etc/rancher/k3s/registries.yaml:
+  mirrors:
+    "172.16.60.35":
+      endpoint: ["http://172.16.60.35"]
+  configs:
+    "172.16.60.35":
+      auth:
+        username: admin
+        password: &lt;vault kv get secret/services/harbor&gt;</div>
+    </div>
+    <div class="card">
+      <div class="card-title">📡 NATS JetStream Cluster</div>
+      <div class="kv-list">
+        <div class="kv-item"><span class="kv-key">Namespace</span><span class="kv-val">nats</span></div>
+        <div class="kv-item"><span class="kv-key">Cluster</span><span class="kv-val">redline-nats</span></div>
+        <div class="kv-item"><span class="kv-key">Replicas</span><span class="kv-val">3 (StatefulSet)</span></div>
+        <div class="kv-item"><span class="kv-key">Client Port</span><span class="kv-val" style="color:var(--accent-cyan)">4222</span></div>
+        <div class="kv-item"><span class="kv-key">Monitor</span><span class="kv-val" style="color:var(--accent-cyan)">8222 (NodePort 30222)</span></div>
+        <div class="kv-item"><span class="kv-key">Account</span><span class="kv-val">redline (JetStream enabled)</span></div>
+        <div class="kv-item"><span class="kv-key">Storage</span><span class="kv-val">10 Gi PVC per pod</span></div>
+        <div class="kv-item"><span class="kv-key">Secret</span><span class="kv-val" style="color:var(--accent-orange)">vault kv get redline/nats</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ 09 — DEVSECOPS ════════ -->
+<section id="devsecops">
+  <div class="section-header">
+    <span class="section-number">09</span>
+    <h2 class="section-title">DevSecOps Pipeline — REDLINE</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="topology-container" style="margin-bottom:16px">
+    <svg viewBox="0 0 1000 180" xmlns="http://www.w3.org/2000/svg" style="font-family:'Share Tech Mono',monospace;">
+      <defs>
+        <marker id="dp" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#00ffcc"/>
+        </marker>
+      </defs>
+      <rect width="1000" height="180" fill="#060a0e"/>
+
+      <rect x="15" y="60" width="105" height="56" rx="6" fill="#ff336611" stroke="#ff336644"/>
+      <text x="67" y="84" fill="#ff3366" font-size="9" text-anchor="middle" font-weight="bold">GitHub</text>
+      <text x="67" y="98" fill="#ff336688" font-size="7" text-anchor="middle">anxzik/CEOAAP</text>
+      <text x="67" y="110" fill="#ff336666" font-size="6.5" text-anchor="middle">source of truth</text>
+      <line x1="120" y1="88" x2="148" y2="88" stroke="#00ffcc" stroke-width="1.5" marker-end="url(#dp)"/>
+      <text x="134" y="80" fill="#00ffcc66" font-size="6.5" text-anchor="middle">mirror</text>
+
+      <rect x="148" y="60" width="115" height="56" rx="6" fill="#ff6b3511" stroke="#ff6b3544"/>
+      <text x="205" y="84" fill="#ff6b35" font-size="9" text-anchor="middle" font-weight="bold">GitLab</text>
+      <text x="205" y="98" fill="#ff6b3588" font-size="7" text-anchor="middle">git.architsec.com</text>
+      <text x="205" y="110" fill="#ff6b3566" font-size="6.5" text-anchor="middle">CI trigger</text>
+      <line x1="263" y1="88" x2="291" y2="88" stroke="#00ffcc" stroke-width="1.5" marker-end="url(#dp)"/>
+
+      <rect x="291" y="50" width="125" height="76" rx="6" fill="#ffd70011" stroke="#ffd70044"/>
+      <text x="353" y="74" fill="#ffd700" font-size="9" text-anchor="middle" font-weight="bold">GitLab CI</text>
+      <text x="353" y="88" fill="#ffd70088" font-size="7" text-anchor="middle">test → build → deploy</text>
+      <text x="353" y="100" fill="#ffd70066" font-size="6.5" text-anchor="middle">Go + Node tests</text>
+      <text x="353" y="112" fill="#ffd70044" font-size="6.5" text-anchor="middle">Runner: k3s-ctrl</text>
+      <line x1="416" y1="88" x2="444" y2="88" stroke="#00ffcc" stroke-width="1.5" marker-end="url(#dp)"/>
+      <text x="430" y="80" fill="#00ffcc66" font-size="6.5" text-anchor="middle">image</text>
+
+      <rect x="444" y="60" width="105" height="56" rx="6" fill="#00d4ff11" stroke="#00d4ff44"/>
+      <text x="496" y="84" fill="#00d4ff" font-size="9" text-anchor="middle" font-weight="bold">Harbor</text>
+      <text x="496" y="98" fill="#00d4ff88" font-size="7" text-anchor="middle">172.16.60.35</text>
+      <text x="496" y="110" fill="#00d4ff66" font-size="6.5" text-anchor="middle">registry</text>
+      <line x1="549" y1="88" x2="577" y2="88" stroke="#00ffcc" stroke-width="1.5" marker-end="url(#dp)"/>
+      <text x="563" y="80" fill="#00ffcc66" font-size="6.5" text-anchor="middle">deploy</text>
+
+      <rect x="577" y="60" width="120" height="56" rx="6" fill="#00ffcc11" stroke="#00ffcc44"/>
+      <text x="637" y="84" fill="#00ffcc" font-size="9" text-anchor="middle" font-weight="bold">K3s Cluster</text>
+      <text x="637" y="98" fill="#00ffcc88" font-size="7" text-anchor="middle">redline ns</text>
+      <text x="637" y="110" fill="#00ffcc66" font-size="6.5" text-anchor="middle">manual gate</text>
+
+      <rect x="725" y="60" width="105" height="56" rx="6" fill="#7a9bb511" stroke="#7a9bb544"/>
+      <text x="777" y="84" fill="#7a9bb5" font-size="9" text-anchor="middle" font-weight="bold">Vault</text>
+      <text x="777" y="98" fill="#7a9bb588" font-size="7" text-anchor="middle">172.16.60.31</text>
+      <text x="777" y="110" fill="#7a9bb566" font-size="6.5" text-anchor="middle">secrets inject</text>
+      <path d="M 725 88 Q 700 40 697 78" fill="none" stroke="#7a9bb544" stroke-width="1" stroke-dasharray="4,3"/>
+
+      <rect x="858" y="60" width="100" height="56" rx="6" fill="#00ff8811" stroke="#00ff8833"/>
+      <text x="908" y="84" fill="#00ff88" font-size="9" text-anchor="middle" font-weight="bold">NATS JS</text>
+      <text x="908" y="98" fill="#00ff8888" font-size="7" text-anchor="middle">nats ns</text>
+      <text x="908" y="110" fill="#00ff8866" font-size="6.5" text-anchor="middle">messaging</text>
+      <line x1="697" y1="100" x2="858" y2="100" stroke="#00ff8833" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <g font-size="6.5" fill="#7a9bb544">
+        <text x="67" y="140" text-anchor="middle">SOURCE</text>
+        <text x="205" y="140" text-anchor="middle">SCM</text>
+        <text x="353" y="140" text-anchor="middle">CI/CD</text>
+        <text x="496" y="140" text-anchor="middle">REGISTRY</text>
+        <text x="637" y="140" text-anchor="middle">DEPLOY</text>
+        <text x="777" y="140" text-anchor="middle">SECRETS</text>
+        <text x="908" y="140" text-anchor="middle">MESSAGING</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">📋 GitLab CI Pipeline Stages</div>
+      <div class="code-block">stages: [test, build, deploy]
+
+test:go:
+  image: golang:1.21
+  script: go test ./...
+  only: [main, /^Phase-.*/]
+
+test:node:
+  image: node:20
+  script: npm ci &amp;&amp; npm test
+
+build:backend:
+  image: docker:24
+  services: [docker:24-dind]
+  script:
+    - docker login 172.16.60.35
+    - docker build -t 172.16.60.35/redline/backend:$SHA .
+    - docker push 172.16.60.35/redline/backend:$SHA
+
+deploy:k3s:
+  image: bitnami/kubectl
+  script: kubectl set image ...
+  when: manual   # manual deploy gate</div>
+    </div>
+    <div class="card">
+      <div class="card-title">🔑 Vault Structure &amp; OIDC</div>
+      <div class="code-block">Vault mounts:
+  secret/   → KV v2 (general)
+  redline/  → KV v2 (REDLINE project)
+  pki/      → PKI engine
+  audit/    → file logging (/var/log/vault)
+
+redline/nats:
+  url:      nats://nats-client.nats.svc...
+  username: redline
+  cluster:  redline-nats</div>
+      <div class="divider"></div>
+      <div class="kv-list">
+        <div class="kv-item"><span class="kv-key">OIDC Client</span><span class="kv-val">cloudflare-access</span></div>
+        <div class="kv-item"><span class="kv-key">Discovery</span><span class="kv-val" style="font-size:0.72rem">auth.architsec.com/realms/architsec/.well-known/openid-configuration</span></div>
+        <div class="kv-item"><span class="kv-key">Secret</span><span class="kv-val" style="color:var(--accent-orange)">vault kv get secret/services/keycloak-oidc-secret</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ 10 — DNS ════════ -->
+<section id="dns">
+  <div class="section-header">
+    <span class="section-number">10</span>
+    <h2 class="section-title">DNS Configuration</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">🗂️ Internal DNS Zones (DC1)</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:48%"><col style="width:24%"><col style="width:28%"></colgroup>
+          <thead><tr><th>Zone</th><th>Type</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">corp.architsec.com</td><td>Primary AD-Int</td><td>Main forward</td></tr>
+            <tr><td class="highlight">_msdcs.corp.architsec.com</td><td>Primary AD-Int</td><td>DC SRV records</td></tr>
+            <tr><td class="highlight">20.16.172.in-addr.arpa</td><td>Primary AD-Int</td><td>VLAN 20 reverse</td></tr>
+            <tr><td class="highlight">0.16.172.in-addr.arpa</td><td>Primary AD-Int</td><td>VLAN 0 reverse</td></tr>
+            <tr><td class="highlight">1.16.172.in-addr.arpa</td><td>Primary AD-Int</td><td>VLAN 10 reverse</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="divider"></div>
+      <div class="card-title">📍 Key DNS Records</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:36%"><col style="width:18%"><col style="width:46%"></colgroup>
+          <thead><tr><th>Host</th><th>Type</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td>dc1</td><td>A</td><td class="ip">172.16.20.8</td></tr>
+            <tr><td>dc3</td><td>A</td><td class="ip">172.16.20.5</td></tr>
+            <tr><td>prox</td><td>A</td><td class="ip">172.16.30.25</td></tr>
+            <tr><td>proxmox</td><td>CNAME</td><td>prox.corp.architsec.com</td></tr>
+            <tr><td>DomainDnsZones</td><td>A</td><td class="ip">172.16.20.8, .5</td></tr>
+            <tr><td>ForestDnsZones</td><td>A</td><td class="ip">172.16.20.8, .5</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🌐 External DNS (Cloudflare)</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:34%"><col style="width:16%"><col style="width:34%"><col style="width:16%"></colgroup>
+          <thead><tr><th>Host</th><th>Type</th><th>Target</th><th>Proxy</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">git.architsec.com</td><td>CNAME</td><td class="cred">5b1bba47…cfargotunnel.com</td><td><span class="badge badge-orange">ON</span></td></tr>
+            <tr><td class="highlight">chat.architsec.com</td><td>CNAME</td><td class="cred">05f7889e…cfargotunnel.com</td><td><span class="badge badge-orange">ON</span></td></tr>
+            <tr><td class="highlight">portal.architsec.com</td><td>CNAME</td><td class="cred">d3bedf9b…cfargotunnel.com</td><td><span class="badge badge-orange">ON</span></td></tr>
+            <tr><td class="highlight">auth.architsec.com</td><td>CNAME</td><td class="cred">03a424bb…cfargotunnel.com</td><td><span class="badge badge-orange">ON</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="divider"></div>
+      <div class="card-title">🔧 Cloudflare Tunnels</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:30%"><col style="width:48%"><col style="width:22%"></colgroup>
+          <thead><tr><th>Tunnel</th><th>ID</th><th>Host VM</th></tr></thead>
+          <tbody>
+            <tr><td>architsec-homelab</td><td class="cred" style="font-size:0.68rem">5b1bba47-ba4a-4db3-bee8-db32d5afbd84</td><td class="ip">172.16.40.22</td></tr>
+            <tr><td>architsec-mattermost</td><td class="cred" style="font-size:0.68rem">05f7889e-9526-4209-bbcd-9beb74ca3ed3</td><td class="ip">172.16.40.21</td></tr>
+            <tr><td>architsec-portal</td><td class="cred" style="font-size:0.68rem">d3bedf9b-0b01-47d7-9dc4-9754625c4d1d</td><td class="ip">172.16.60.36</td></tr>
+            <tr><td>architsec-keycloak</td><td class="cred" style="font-size:0.68rem">03a424bb-78cc-4ae5-9ad1-eba1d9fe63aa</td><td class="ip">172.16.60.30</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ 11 — TROUBLESHOOTING ════════ -->
+<section id="troubleshooting">
+  <div class="section-header">
+    <span class="section-number">11</span>
+    <h2 class="section-title">Troubleshooting Log &amp; Remediation</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <details class="ts-card" open>
+    <summary>🔴 1. AD Replication — 1,029 Consecutive Failures (Feb–May 2026)</summary>
+    <div class="ts-body">
+      <div class="alert alert-danger">⚠️ <strong>Critical:</strong> DC3 had not replicated since Feb 18 2026 — 1,029 consecutive failures across all 5 AD partitions.</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:5%"><col style="width:40%"><col style="width:40%"><col style="width:15%"></colgroup>
+          <thead><tr><th>#</th><th>Root Cause</th><th>Fix Applied</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>DC1 moved to new IP — DC3 DNS still pointing to old IP</td><td>Updated DNS client settings on DC3 to new DC1 IP</td><td class="status-up">RESOLVED</td></tr>
+            <tr><td>2</td><td>Tailscale on DC3 — NRPT rule intercepting corp.architsec.com DNS</td><td>Removed NRPT rules, disabled Tailscale service</td><td class="status-up">RESOLVED</td></tr>
+            <tr><td>3</td><td>DC1 SPNs missing from AD computer object</td><td>Set-ADComputer to write all required SPNs</td><td class="status-up">RESOLVED</td></tr>
+            <tr><td>4</td><td>DC3 machine account secure channel broken</td><td>netdom resetpwd /server:dc1 /userd:corp\master</td><td class="status-up">RESOLVED</td></tr>
+            <tr><td>5</td><td>NTDS initial sync flag blocking replication</td><td>Set "Repl Perform Initial Synchronizations" = 0 (temporary)</td><td class="status-pending">TODO</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="alert alert-warning" style="margin-top:12px">⚠️ <strong>TODO:</strong> Remove bypass registry flags from DC3 — <code>Repl Perform Initial Synchronizations</code> and <code>Allow Replication With Divergent</code>.</div>
+    </div>
+  </details>
+
+  <details class="ts-card">
+    <summary>🔴 2. WireGuard — No Traffic Through Tunnel</summary>
+    <div class="ts-body">
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:30%"><col style="width:32%"><col style="width:38%"></colgroup>
+          <thead><tr><th>Issue</th><th>Symptom</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td>CGNAT blocking inbound UDP 51820</td><td>Handshake never established externally</td><td>Deployed OCI VPS relay — edge1 dials out, clients hit OCI</td></tr>
+            <tr><td>OCI Security List wrong direction</td><td>0 packets received at OCI</td><td>Rule filtered <code>source-port 51820</code> → fixed to <code>destination-port 51820</code></td></tr>
+            <tr><td>FreshTomato DROP state NEW on wg0</td><td>Handshake OK but no LAN forwarding</td><td>Removed <code>iptables -D FORWARD -i wg0 -m state --state NEW -j DROP</code></td></tr>
+            <tr><td>swr1 missing return route</td><td>Pings to DC1/Proxmox 100% loss</td><td>Added <code>ip route 10.20.0.0 255.255.255.0 172.16.0.1</code></td></tr>
+            <tr><td>OCI FORWARD REJECT rule</td><td>Packets arrived but not forwarded</td><td>Removed <code>iptables -D FORWARD -j REJECT</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="ts-card">
+    <summary>🔴 3. DNS — Rogue Stub Zones Intercepting Queries</summary>
+    <div class="ts-body">
+      <div class="alert alert-danger">DNS resolution failing for internal services after VLAN migration.</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:50%"><col style="width:50%"></colgroup>
+          <thead><tr><th>Issue</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td>20+ rogue per-host stub zones (dc1, dc3, drac1, edge1, swr1…) intercepting queries</td><td>Removed all stub zones via DNS Manager</td></tr>
+            <tr><td>Rogue CNAME architsec.com → architsec.co. in _msdcs zone</td><td>Deleted rogue CNAME record</td></tr>
+            <tr><td>DomainDnsZones/ForestDnsZones pointing to old NT-3 IP (172.16.10.5)</td><td>Updated A records to 172.16.20.8, .5</td></tr>
+            <tr><td>DC1 DNS listening on APIPA addresses</td><td>Registry: set listening to 172.16.20.8 and 127.0.0.1 only</td></tr>
+            <tr><td>Registry key format wrong (comma string vs MultiString)</td><td>Corrected REG_MULTI_SZ format</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="ts-card">
+    <summary>🔴 4. Guacamole — Connection Refused / Internal Server Error</summary>
+    <div class="ts-body">
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:46%"><col style="width:54%"></colgroup>
+          <thead><tr><th>Issue</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td>guacd binding only to [::1]:4822 (IPv6) — Tomcat connects via IPv4</td><td>Start with <code>/usr/local/sbin/guacd -b 0.0.0.0 -l 4822 -f</code></td></tr>
+            <tr><td>Bash history expansion mangling XML credentials (! char)</td><td>Used heredoc OUTEREOF pattern to avoid shell interpretation</td></tr>
+            <tr><td>Cloudflared using old token-based config</td><td>Uninstalled old service, wrote custom systemd unit → config.yml</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="ts-card">
+    <summary>🔴 5. Cloudflare Tunnel — HTTP 523 Origin Unreachable</summary>
+    <div class="ts-body">
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:22%"><col style="width:38%"><col style="width:40%"></colgroup>
+          <thead><tr><th>Service</th><th>Root Cause</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td>git.architsec.com</td><td>edge1 port forward pointed to RD Gateway (172.16.40.10) not GitLab</td><td>Deployed cloudflared directly on GitLab VM</td></tr>
+            <tr><td>chat.architsec.com</td><td>Same port forward issue + separate VM</td><td>Deployed separate cloudflared on Mattermost VM</td></tr>
+            <tr><td>Both tunnels</td><td>Old A records (104.21.x.x, 172.67.x.x) blocking CNAME</td><td>Deleted old A records, re-ran tunnel route dns</td></tr>
+            <tr><td>GitLab tunnel</td><td>nginx TLS on 443, tunnel sending plain HTTP</td><td>Set originRequest.noTLSVerify: true + originServerName</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="ts-card">
+    <summary>🔴 6. Proxmox — Ghost Node / AD Authentication</summary>
+    <div class="ts-body">
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:46%"><col style="width:54%"></colgroup>
+          <thead><tr><th>Issue</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td>Ghost "pve1" node in cluster view after hostname change</td><td>Removed /etc/pve/nodes/pve1, cleaned cluster config</td></tr>
+            <tr><td>vmbr0 traffic not routing — bridge not VLAN-aware</td><td>Added <code>bridge-vlan-aware yes</code> to /etc/network/interfaces</td></tr>
+            <tr><td>AD users not appearing after realm sync</td><td>Hourly cron: <code>pveum realm sync corp.architsec.com --full 1 --scope both</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="ts-card">
+    <summary>🔴 7. Vault — LXC mlock Error</summary>
+    <div class="ts-body">
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:46%"><col style="width:54%"></colgroup>
+          <thead><tr><th>Issue</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td>Vault fails to start in LXC: "Failed to lock memory"</td><td>Added <code>disable_mlock = true</code> to /etc/vault.d/vault.hcl</td></tr>
+            <tr><td>/var/log/vault missing — audit device creation failed</td><td><code>mkdir -p /var/log/vault &amp;&amp; chown vault:vault /var/log/vault</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="ts-card">
+    <summary>🔴 8. Nexus — Java Version Incompatibility</summary>
+    <div class="ts-body">
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:46%"><col style="width:54%"></colgroup>
+          <thead><tr><th>Issue</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td>Nexus 3.68 requires Java 8–11, Java 17 installed</td><td>Installed openjdk-11, set INSTALL4J_JAVA_HOME in systemd</td></tr>
+            <tr><td>-Djava.endorsed.dirs flag incompatible with Java 11</td><td>Removed flag from nexus.vmoptions</td></tr>
+            <tr><td>Java 9+ flags commented out in vmoptions</td><td>Rewrote nexus.vmoptions with correct Java 11 flags</td></tr>
+            <tr><td>Memory too high for LXC (2703m)</td><td>Reduced to <code>-Xms512m -Xmx1024m -XX:MaxDirectMemorySize=512m</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="ts-card">
+    <summary>🔴 9. Harbor — AppArmor in LXC</summary>
+    <div class="ts-body">
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:46%"><col style="width:54%"></colgroup>
+          <thead><tr><th>Issue</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td>Docker fails: "AppArmor enabled but docker-default profile could not be loaded"</td><td>Added <code>lxc.apparmor.profile: unconfined</code> to /etc/pve/lxc/207.conf</td></tr>
+            <tr><td>Invalid daemon.json (security-opt not valid)</td><td>Removed daemon.json entirely — Docker starts clean</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="ts-card">
+    <summary>🔴 10. NATS JetStream — Cluster CrashLoopBackOff</summary>
+    <div class="ts-body">
+      <div class="table-wrap">
+        <table class="data-table">
+          <colgroup><col style="width:46%"><col style="width:54%"></colgroup>
+          <thead><tr><th>Issue</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td>"jetstream cluster requires server_name to be set"</td><td>Init container generates config with POD_NAME as server_name</td></tr>
+            <tr><td>NATS showing offline in portal despite pods running</td><td>Exposed monitor port as NodePort 30222 (portal hit unreachable cluster IP)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <div class="card" style="margin-top:18px">
+    <div class="card-title">🟡 Pending Remediation Items</div>
+    <div class="alert alert-warning">⚠️ These items require action.</div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <colgroup><col style="width:12%"><col style="width:34%"><col style="width:54%"></colgroup>
+        <thead><tr><th>Priority</th><th>Item</th><th>Action Required</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-red">HIGH</span></td><td>DC3 replication bypass flags</td><td>Remove "Repl Perform Initial Synchronizations" and "Allow Replication With Divergent" from DC3 registry</td></tr>
+          <tr><td><span class="badge badge-red">HIGH</span></td><td>IP camera physical reset</td><td>Power cycle camera to get DHCP lease on VLAN 70</td></tr>
+          <tr><td><span class="badge badge-yellow">MED</span></td><td>DHCP helper address</td><td>swr1 VLANs 30/40/50/60 helper points to 172.16.20.5 — should be .8 (primary)</td></tr>
+          <tr><td><span class="badge badge-yellow">MED</span></td><td>GPO linking</td><td>Tier 3/4 GPOs created but not linked to OUs</td></tr>
+          <tr><td><span class="badge badge-yellow">MED</span></td><td>DC3 hosts file cleanup</td><td>Remove temporary DC1 entries added during replication repair</td></tr>
+          <tr><td><span class="badge badge-yellow">MED</span></td><td>Unknown device 172.16.0.212</td><td>Identify device that appeared in ARP table</td></tr>
+          <tr><td><span class="badge badge-blue">LOW</span></td><td>Nginx reverse proxy LXC</td><td>Deploy Nginx LXC at 172.16.60.12 for internal SSL termination</td></tr>
+          <tr><td><span class="badge badge-blue">LOW</span></td><td>Vault + K3s secrets injection</td><td>Configure Vault agent injector for pod secrets</td></tr>
+          <tr><td><span class="badge badge-blue">LOW</span></td><td>OCI DRG BGP</td><td>Site-to-site VPN between OCI VCN and homelab</td></tr>
+          <tr><td><span class="badge badge-blue">LOW</span></td><td>Wazuh agents on K3s nodes</td><td>Deploy to k3s-ctrl, k3s-w1, k3s-w2</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+</div><!-- /container -->
+
+<footer>
+  <div class="container">
+    <p>ARCHER IT SECURITY CONSULTING — <span>corp.architsec.com</span></p>
+    <p style="margin-top:8px">Infrastructure Build Documentation v2.0 — June 2026 — <span class="conf">INTERNAL CONFIDENTIAL</span></p>
+  </div>
+</footer>
+
+</body>
+</html>
